@@ -45,7 +45,7 @@ from apps.sage_one.sageone_reader.allocation_fetcher import fetch_allocation_sou
 
 
 def run_allocation_fetch(job_id, task, side, task_type):
-    """Allocation ke liye SageOne data laata hai; adhoora rahe to task ko failed (0) mark karta hai."""
+    """Fetches the SageOne data for an allocation task; if the fetch is incomplete the task is marked failed (0)."""
     step_name = f"Reading {side} allocation data from sageone "
     update_task_execution_status(task.id, status=2, task_type=task_type)
     write_task_execution_step(task.id, status=2, step=step_name)
@@ -62,7 +62,7 @@ def run_allocation_fetch(job_id, task, side, task_type):
 
 
 def run_allocation_write(job_id, task, side, build_file):
-    """Retry par bhi pehle bacha data laata hai, phir allocation file banata hai."""
+    """On retry it first fetches any remaining data, then builds the allocation file."""
     if not run_allocation_fetch(job_id, task, side, "write"):
         return
     step_name = f"write all {side} allocation data sageone "

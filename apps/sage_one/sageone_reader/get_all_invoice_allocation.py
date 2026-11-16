@@ -17,12 +17,12 @@ def get_all_invoice_allocation_data(job_id, task_id):
         dbname = get_mongodb_database()
 
         Collection = dbname["sage_all_invoice_allocation_data"]
-        # Retry par rows double na hon
+        # Avoid duplicate rows on retry
         Collection.delete_many({"job_id": job_id})
 
         fields = {"_id": 0, "ID": 1, "DocumentNumber": 1, "Date": 1, "CustomerName": 1, "Reference": 1}
         sage_invoice = {i["ID"]: i for i in dbname["alloc_invoice"].find({"job_id": job_id}, fields)}
-        # Sirf credit note -> invoice allocations (receipts nahi)
+        # Only credit note -> invoice allocations (not receipts)
         sage_credit_note = {c["ID"]: c for c in dbname["alloc_credit_note"].find({"job_id": job_id}, fields)}
 
         documents_to_insert = []

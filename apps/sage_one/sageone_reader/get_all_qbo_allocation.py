@@ -1,12 +1,12 @@
 """
-QBO template me allocation file.
+Allocation file in the QBO template.
 
-1. Credit allocation (credit note -> invoice, vendor credit -> bill): QBO me ye zero-amount payment
-   hota hai jiske do LinkedTxn lines hoti hain, isliye har allocation ki 2 rows banti hain,
-   dono same TXN number (SageOne allocation ID) ke saath.
-2. Payment allocation (receipt -> invoice, supplier payment -> bill): ek receipt / payment = ek QBO
-   payment (TXN number = receipt / payment number). Jitne invoices / bills par laga, utni rows.
-   Total amount = receipt / payment ka total, Bank = uska SageOne bank account.
+1. Credit allocation (credit note -> invoice, vendor credit -> bill): in QBO this is a zero-amount
+   payment with two LinkedTxn lines, so every allocation produces 2 rows,
+   both with the same TXN number (SageOne allocation ID).
+2. Payment allocation (receipt -> invoice, supplier payment -> bill): one receipt / payment = one QBO
+   payment (TXN number = receipt / payment number). One row per invoice / bill it was applied to.
+   Total amount = total of the receipt / payment, Bank = its SageOne bank account.
 """
 import traceback
 from apps.util.db_mongo import get_mongodb_database
@@ -38,7 +38,7 @@ def build_qbo_allocation(job_id, task_id, side):
         dbname = get_mongodb_database()
 
         Collection = dbname[s["out"]]
-        # Retry par rows double na hon
+        # Avoid duplicate rows on retry
         Collection.delete_many({"job_id": job_id})
 
         def by_id(collection_name):

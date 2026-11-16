@@ -1,13 +1,13 @@
 """
-Invoice / Bill allocation ke liye SageOne se data laane wala fetcher.
+Fetcher that pulls the data needed for the Invoice / Bill allocation files from SageOne.
 
-- SageOne ek call me max 100 records deta hai, isliye page-by-page loop (recursion nahi,
-  taaki 2 lakh+ records par bhi crash na ho).
-- Har page aate hi MongoDB me save (job_id + ID par upsert, isliye duplicate nahi banta).
-- Internet / SageOne band ho to ruk kar dobara koshish karta hai (5s, 10s, 20s ... 60s),
-  aur wapas aane par ek page peeche se shuru karta hai.
-- Bahut der tak band rahe to AllocationFetchError deta hai; Start / Retry dabane par
-  jitna data aa chuka hai uske aage se resume hota hai.
+- SageOne returns at most 100 records per call, so it loops page by page (no recursion,
+  so it does not crash even on 200,000+ records).
+- Every page is saved to MongoDB as soon as it arrives (upsert on job_id + ID, so no duplicates).
+- If the internet / SageOne goes down it waits and retries (5s, 10s, 20s ... 60s),
+  and starts one page back once the connection returns.
+- If the outage lasts too long it raises AllocationFetchError; pressing Start / Retry
+  resumes from the data that has already been fetched.
 """
 import os
 import time
@@ -20,7 +20,7 @@ from apps.util.db_mongo import get_mongodb_database
 from apps.util.log_file import log_config
 
 BASE_URL = "https://accounting.sageone.co.za/api/2.0.0"
-PAGE_SIZE = 100  # SageOne ka maximum
+PAGE_SIZE = 100  # SageOne maximum
 DELAY_BETWEEN_CALLS = float(os.getenv("ALLOCATION_DELAY_SECONDS", "1"))
 MAX_WAIT_MINUTES = float(os.getenv("ALLOCATION_MAX_WAIT_MINUTES", "120"))
 REQUEST_TIMEOUT = (15, 180)  # (connect, read) seconds
@@ -40,8 +40,8 @@ SOURCES = {
     "alloc_bank_account": ("BankAccount", "", ["ID", "Name"]),
 }
 
-# Xero file me sirf credit note -> invoice / vendor credit -> bill.
-# QBO file me receipts / supplier payments wale allocations bhi aate hain.
+# Xero files: only credit note -> invoice / vendor credit -> bill.
+# QBO files also include the allocations made by receipts / supplier payments.
 SIDE_SOURCES = {
     "invoice": ["alloc_allocation", "alloc_invoice", "alloc_credit_note"],
     "bill": ["alloc_allocation", "alloc_bill", "alloc_vendorcredit"],
@@ -75,7 +75,7 @@ class AllocationFetchError(Exception):
 
 
 def _save_progress(dbname, job_id, collection_name, have, total, eta=None, done=False):
-    """Frontend progress bar ke liye har page ke baad status save karta hai."""
+    """Saves the status after every page for the frontend progress bar."""
     dbname["alloc_progress"].update_one(
         {"job_id": job_id, "collection": collection_name},
         {"$set": {"have": have, "total": total, "eta_min": eta, "done": done, "updated": time.time()}},
@@ -83,7 +83,7 @@ def _save_progress(dbname, job_id, collection_name, have, total, eta=None, done=
 
 
 def allocation_progress(job_id, functions):
-    """Job ke allocation tasks ka progress: har data type kitna aaya / total, aur files kitni rows ki bani."""
+    """Progress of a job's allocation tasks: fetched / total for every data type, and the row count of each built file."""
     dbname = get_mongodb_database()
     saved = {p["collection"]: p for p in dbname["alloc_progress"].find({"job_id": job_id}, {"_id": 0})}
     sources, files = [], []
@@ -100,7 +100,7 @@ def allocation_progress(job_id, functions):
     items = []
     for name in sources:
         have = dbname[name].count_documents({"job_id": job_id})
-        # progress tracking se pehle ki purani jobs: file ban chuki hai to data complete tha
+        # Older jobs from before progress tracking: if the files are built, the data was complete
         p = saved.get(name) or ({"total": have, "done": True} if have and files_built else {})
         items.append({
             "label": LABELS[name],
@@ -114,7 +114,7 @@ def allocation_progress(job_id, functions):
 
 
 def _get_page(url, headers, payload, logging, label):
-    """Ek page laata hai. Network error / timeout / 5xx / 429 / galat JSON par ruk kar dobara koshish."""
+    """Fetches one page. Waits and retries on network error / timeout / 5xx / 429 / invalid JSON."""
     waited = 0
     attempt = 0
     while True:
@@ -126,13 +126,13 @@ def _get_page(url, headers, payload, logging, label):
             if response.status_code == 429:
                 retry_after = response.headers.get("Retry-After")
                 wait = int(retry_after) if retry_after and retry_after.isdigit() else 60
-                logging.warning(f"{label}: SageOne rate limit (429), {wait}s ruk rahe hain")
+                logging.warning(f"{label}: SageOne rate limit (429), waiting {wait}s")
             elif response.status_code >= 500:
                 logging.warning(f"{label}: SageOne server error {response.status_code}")
             else:
-                # 400 / 401 / 403 jaisi galti retry se theek nahi hogi
+                # Errors like 400 / 401 / 403 will not be fixed by retrying
                 raise AllocationFetchError(
-                    f"{label}: SageOne ne HTTP {response.status_code} diya: {response.text[:300]}")
+                    f"{label}: SageOne returned HTTP {response.status_code}: {response.text[:300]}")
         except AllocationFetchError:
             raise
         except (requests.exceptions.RequestException, ValueError) as ex:
@@ -143,15 +143,15 @@ def _get_page(url, headers, payload, logging, label):
         attempt += 1
         if waited + wait > MAX_WAIT_MINUTES * 60:
             raise AllocationFetchError(
-                f"{label}: {int(waited / 60)} minute tak SageOne se connect nahi hua. "
-                f"Internet check karke job dobara Start/Retry karein, data wahin se aage aayega.")
-        logging.info(f"{label}: {wait}s baad dobara koshish (attempt {attempt})")
+                f"{label}: could not connect to SageOne for {int(waited / 60)} minutes. "
+                f"Check the internet connection and press Start/Retry again; the data will resume where it stopped.")
+        logging.info(f"{label}: retrying in {wait}s (attempt {attempt})")
         time.sleep(wait)
         waited += wait
 
 
 def fetch_collection(job_id, collection_name):
-    """Ek type ka poora data laata hai. Pehle se aaya data skip hota hai. Return: (rows, total)."""
+    """Fetches all data of one type. Data already fetched is skipped. Returns: (rows, total)."""
     logging = log_config(job_id)
     endpoint, extra, fields = SOURCES[collection_name]
     dbname = get_mongodb_database()
@@ -163,14 +163,14 @@ def fetch_collection(job_id, collection_name):
                     f"&apikey={{{{{api_key_data}}}}}&CompanyId={company_id_data}")
 
     have = collection.count_documents({"job_id": job_id})
-    # resume par ek page peeche se, taaki beech ka koi record na chhoote (upsert duplicate rokta hai)
+    # On resume, go back one page so no record in between is missed (upsert prevents duplicates)
     skip = max(0, have - PAGE_SIZE)
-    # purane rows me naye fields (Date / Name) nahi hain to shuru se dobara laao
+    # Old rows lack the new fields (Date / Name), so fetch again from the start
     if have and collection.count_documents({"job_id": job_id, "$or": [{f: {"$exists": False}} for f in fields]}):
         skip = 0
-        logging.info(f"{job_id} {collection_name}: naye fields missing, shuru se dobara laa rahe hain")
+        logging.info(f"{job_id} {collection_name}: new fields missing, refetching from the start")
     elif have:
-        logging.info(f"{job_id} {collection_name}: resume, {have} pehle se hain, skip {skip} se shuru")
+        logging.info(f"{job_id} {collection_name}: resuming, {have} already saved, starting from skip {skip}")
 
     started = time.time()
     fetched_now = 0
@@ -208,12 +208,12 @@ def fetch_collection(job_id, collection_name):
     total = total or 0
     if have < total:
         raise AllocationFetchError(
-            f"{job_id} {collection_name}: sirf {have} / {total} records aaye. Job dobara Start/Retry karein.")
+            f"{job_id} {collection_name}: only {have} / {total} records were fetched. Press Start/Retry again.")
     logging.info(f"{job_id} {collection_name}: complete {have:,} / {total:,}")
     _save_progress(dbname, job_id, collection_name, have, total, 0, done=True)
     return have, total
 
 
 def fetch_allocation_sources(job_id, side):
-    """side = 'invoice' ya 'bill'. Allocation file ke liye zaroori saara data laata hai."""
+    """side = 'invoice' or 'bill'. Fetches all the data needed for the allocation file."""
     return {name: fetch_collection(job_id, name) for name in SIDE_SOURCES[side]}

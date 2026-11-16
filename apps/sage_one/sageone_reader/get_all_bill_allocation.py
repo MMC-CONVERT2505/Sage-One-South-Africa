@@ -11,12 +11,12 @@ def get_all_bill_allocation_data(job_id, task_id):
         dbname = get_mongodb_database()
 
         Collection = dbname["sage_all_bill_allocation_data"]
-        # Retry par rows double na hon
+        # Avoid duplicate rows on retry
         Collection.delete_many({"job_id": job_id})
 
         fields = {"_id": 0, "ID": 1, "DocumentNumber": 1, "Date": 1, "SupplierName": 1, "Reference": 1}
         sage_bill = {b["ID"]: b for b in dbname["alloc_bill"].find({"job_id": job_id}, fields)}
-        # Sirf vendor credit -> bill allocations (supplier payments nahi)
+        # Only vendor credit -> bill allocations (not supplier payments)
         sage_vendor_credit = {v["ID"]: v for v in dbname["alloc_vendorcredit"].find({"job_id": job_id}, fields)}
 
         documents_to_insert = []

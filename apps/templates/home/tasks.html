@@ -165,7 +165,7 @@
 
     });
 
-    // Allocation tasks ka progress (kitna aaya / kitna baaki), har 10 second me update
+    // Allocation task progress (fetched / remaining), refreshed every 10 seconds
     function loadAllocationProgress() {
         $.getJSON("/allocation_progress/{{job_id}}", function(data) {
             if (!data.sources.length) { return; }
@@ -175,9 +175,9 @@
                 var color = s.done ? "#28a745" : (s.running ? "#007bff" : "#adb5bd");
                 var status;
                 if (s.done) { status = "Complete"; }
-                else if (s.running) { status = (s.total - s.have).toLocaleString() + " baaki" + (s.eta_min ? " · ETA ~" + s.eta_min + " min" : ""); }
-                else if (s.have) { status = "Ruka hua (Retry se aage chalega)"; }
-                else { status = "Intezaar"; }
+                else if (s.running) { status = (s.total - s.have).toLocaleString() + " remaining" + (s.eta_min ? " · ETA ~" + s.eta_min + " min" : ""); }
+                else if (s.have) { status = "Stopped (press Retry to resume)"; }
+                else { status = "Waiting"; }
                 html += '<div style="display:flex; align-items:center; gap:12px; margin-bottom:8px; flex-wrap:wrap;">'
                      +  '<div style="width:140px; font-weight:600;">' + s.label + '</div>'
                      +  '<div style="flex:1; min-width:160px; background:#e9ecef; border-radius:4px; height:18px; overflow:hidden;">'
@@ -188,7 +188,7 @@
             });
             $("#alloc-sources").html(html);
             var files = data.files.map(function(f) {
-                return f.name + ": " + (f.rows ? "<b>" + f.rows.toLocaleString() + " rows</b> ✅" : "banna baaki");
+                return f.name + ": " + (f.rows ? "<b>" + f.rows.toLocaleString() + " rows</b> ✅" : "not generated yet");
             });
             $("#alloc-files").html("<b>Files:</b> " + files.join(" &nbsp;|&nbsp; "));
             $("#alloc-updated").text("(updated " + new Date().toLocaleTimeString() + ")");
