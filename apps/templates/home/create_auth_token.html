@@ -1,0 +1,151 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} UI Forms {% endblock %}
+
+<!-- Specific Page CSS goes HERE  -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.4/css/select2.min.css" rel="stylesheet"/>
+
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h4 class="page-title">GET_XERO_ACCESS</h4>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="#">Home</a></li>
+        </ol>
+    </nav>
+</div>
+<div class="card">
+    <div class="card-header" style="background-color: #6495ED;">
+        {% if request.args.get('msg') %}
+        <span class="text-danger">{{ request.args.get('msg') }}</span>
+        {% endif %}
+    </div>
+    <div class="card-body">
+        <form action="" enctype="multipart/form-data" method="post">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-group mt-12">
+                        <button class="btn btn-success ms-10 mb-3" id="myButton" > Get_Auth_Token </button>
+                    
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group mt-6">
+                        <label for="description">Callback URI</label>
+                        <input type="text" class="form-control" value="description" name="description" id="description"
+                               placeholder="Enter description">
+                    </div>
+                               
+                                      
+                </div>
+            
+                <div class="col-md-12">
+
+                <button class="btn btn-success ms-4 mb-3" id="button11" > Get_Company_Id </button>
+
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group form-floating-label mt-3">
+                        <label for="input_account_id">Company Id's</label>
+                        <select class="form-control form-select input-solid" id="dynamicSelect"
+                            name="input_account_id">
+                            <option value='None'>Select company id's</option>
+
+                            {% for item in company_data %}
+                            <option value={{item.id}}>{{item.tool_name}}</option>
+                    
+                            {% endfor %}
+                        </select>
+
+                    </div>
+                </div>
+                <div class="col-md-12">
+
+                    <button class="btn btn-success ms-4 mb-3" id="button1" > Get_Company </button>
+    
+                    </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.4/jquery.min.js" integrity="sha512-pumBsjNRGGqkPzKHndZMaAG+bir374sORyzM3uulLV14lN5LyykqNk8eEeUlUkB3U0M4FApyaHraT65ihJhDpQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.4/js/select2.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script>
+    $(document).ready(function() {
+      $('#myButton').click(function() {
+        debugger
+        $.ajax({
+          type: "POST",
+          url: "/onclickauth",
+
+          success: function(auth_url1) {
+            window.open(auth_url1,"_self")
+          }
+        });
+      });
+    });
+    $(document).ready(function() {
+      $('#button11').click(function() {
+        var x = $("input:text").val();   
+        $.ajax({
+          type: "POST",
+          url: "/getcompanyid",
+          data:{url1:x}
+          
+        });
+        });
+      });
+
+      $(document).ready(function() {
+      
+      $('#button1').click(function(e) {
+        e.preventDefault();
+        
+        alert('im clicked')
+                $.ajax({
+                    url: "/getcompany",
+                    method: "GET",
+                    dataType: "json",
+
+
+                    success: function(data) {
+                        // var result = $.parseJSON(data)
+                        // Clear existing options
+                        // console.log(result)
+                        $("#dynamicSelect").empty();
+
+                        // Add a default option
+                        $("#dynamicSelect").append("<option value=''>Select an option</option>");
+
+                        // Append options based on AJAX response
+                        $.each(data, function(index, value) {
+                            $("#dynamicSelect").append("<option value='" + value.id + "'>" + value.tenantName + "</option>");
+                        });
+                    },
+                    error: function(xhr, status, error) {
+                        console.log("Error:", error);
+                    }
+                });
+            });
+        });
+
+
+
+
+  </script>
+{% endblock javascripts %}

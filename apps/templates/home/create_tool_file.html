@@ -1,0 +1,81 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} UI Forms {% endblock %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.4/css/select2.min.css" rel="stylesheet"/>
+{% endblock stylesheets %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h4 class="page-title">ToolFile</h4>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="#">Home</a></li>
+            <li class="breadcrumb-item"><a href="/connect_input_tool">ToolFile</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Add New ToolFile</li>
+        </ol>
+    </nav>
+</div>
+<div class="card">
+    <div class="card-header" style="background-color: #6495ED;">
+        <div class="card-title" style="color: white;">Create ToolFile</div>
+        {% if request.args.get('msg') %}
+        <span class="text-danger">{{ request.args.get('msg') }}</span>
+        {% endif %}
+    </div>
+    <div class="card-body">
+        <form action="" enctype="multipart/form-data" method="post">
+            <div class="row">
+                
+                <div class="form-group form-floating-label mt-3">
+                    <label for="name">File Name</label>
+                    <select class="form-control form-select input-solid" id="name"
+                            name="name">
+                        <option value='None'>Select Output File</option>
+                        {% for item in output_settings %}
+                        <option value="{{ item.tool_name | e }}">{{item.tool_name}}</option>
+                        {% endfor %}
+                    </select>
+
+                </div>
+
+                        
+                    
+                <div class="col-md-6">
+                    <div class="form-group mt-6">
+                        <label for="email">Email</label>
+                        <input type="text" class="form-control" name="email" id="email"
+                               placeholder="Enter your email">
+                    </div>
+                   
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-success ms-3 mb-3" id="submit_button">Submit</button>
+            
+        </form>
+    </div>
+</div>
+
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.4/jquery.min.js" integrity="sha512-pumBsjNRGGqkPzKHndZMaAG+bir374sORyzM3uulLV14lN5LyykqNk8eEeUlUkB3U0M4FApyaHraT65ihJhDpQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.4/js/select2.min.js"></script>
+<script>
+
+
+$(document).ready(function() {
+            $('#name').select2({
+                placeholder: "Select your file",
+                allowClear: true
+            });
+        });
+	
+</script>
+{% endblock javascripts %}

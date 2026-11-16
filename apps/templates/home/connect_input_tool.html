@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sageone to ReckonOne Conversion</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f5f5f5;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .infographic-img {
+            max-width: 100%;
+            height: auto;
+        }
+        .card {
+            width: 100%;
+            max-width: 820px;
+            text-align: center;
+            padding: 20px;
+            border-radius: 15px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            text-align: left;
+            font-weight: bold;
+        }
+        .form-control {
+            border: none;
+            border-radius: 0;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .error {
+        color: red
+        }
+
+    </style>
+
+</head>
+<body>
+<div class="container">
+
+    <div class="container mt-5">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-danger" role="alert">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+    <img class="infographic-img mb-4" src="/static/assets/img/mmc_logo.png" alt="Infographic" style="width: 70px;">
+    <div class="card">
+        <div class="card-header">
+            <h1 class="text"><b>LET'S MOVE YOUR BOOKS</b></h1>
+            <h3>Contact Details</h3>
+            <p>Please provide your contact details so we can send you updates about the status of your data migration.</p>
+        </div>
+        <div class="card-body">
+            <form enctype="multipart/form-data" method="post">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="inputCompany">Company <span style="color:red">*</span></label>
+                            <input type="text" class="form-control form-control-lg" id="inputCompany" name="inputCompany" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="inputEmail">Email <span style="color:red">*</span></label>
+                            <input type="email" class="form-control form-control-lg" id="inputEmail" name="inputEmail"required>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="inputFirstName">First Name</label>
+                            <input type="text" class="form-control form-control-lg" id="inputFirstName" name="inputFirstName" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="inputLastName">Last Name</label>
+                            <input type="text" class="form-control form-control-lg" id="inputLastName" name="inputLastName" required>
+                        </div>
+                    </div>
+                    <!-- start date -->
+                    <div class="col-md-6">
+                        <div class="form-group">
+                        <label for="start_date" id="label_start">Start Date</label>
+                        <input type="date" class="form-control" name="start_date" id="start_date"
+                            placeholder="01-01-2022">
+                        </div>
+                    </div>
+                    <!-- end date -->
+                    <div class="col-md-6">
+                        <div class="form-group">
+                        <label for="start_date" id="label_start">End Date</label>
+                        <input type="date" class="form-control" name="end_date" id="end_date"
+                            placeholder="01-01-2022">
+                        </div>
+                    </div>
+                </div>
+                <button class="btn btn-success mb-3">Let's Go</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- jQuery and Bootstrap JS CDN links -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<!-- Your JavaScript code can be placed here -->
+</body>
+</html>

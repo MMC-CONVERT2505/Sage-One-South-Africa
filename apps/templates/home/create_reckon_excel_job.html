@@ -1,0 +1,204 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Add New Job{% endblock %}
+
+{% block stylesheets %}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.4/css/select2.min.css" rel="stylesheet"/>
+<style>
+    .card {
+        box-shadow: 0 0.5rem 1rem rgba(0,0,0,.15);
+        border-radius: 1rem;
+    }
+
+    .card-header {
+        background: linear-gradient(90deg, #4e73df 0%, #1cc88a 100%);
+        color: white;
+        border-top-left-radius: 1rem;
+        border-top-right-radius: 1rem;
+    }
+
+    .form-control,
+    .form-select {
+        border-radius: 0.5rem;
+    }
+
+    .form-group label {
+        font-weight: 600;
+    }
+
+    .table thead {
+        background-color: #f8f9fc;
+    }
+
+    .breadcrumb-item + .breadcrumb-item::before {
+        color: #6c757d;
+    }
+
+    .form-check-label {
+        margin-left: 0.5rem;
+    }
+
+    .page-title {
+        font-weight: bold;
+        font-size: 1.5rem;
+    }
+
+    #submit_button {
+        border-radius: 0.5rem;
+        padding: 0.5rem 2rem;
+        font-weight: 600;
+    }
+
+    #function_table input[type="checkbox"] {
+        transform: scale(1.3);
+    }
+</style>
+{% endblock stylesheets %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center pt-3 pb-2 mb-4 border-bottom">
+    <h4 class="page-title">Create New Job</h4>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="#">Home</a></li>
+            <li class="breadcrumb-item"><a href="/jobs">Jobs</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Add Job</li>
+        </ol>
+    </nav>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-danger" role="alert">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+<div class="card mb-5">
+    <div class="card-header">
+        <h5 class="mb-0">Create Job</h5>
+    </div>
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="name">Job Name</label>
+                        <input type="text" class="form-control" name="name" id="name" placeholder="Enter Job Name" required>
+                    </div>
+
+                    <div class="form-group mt-3">
+                        <label for="input_account_id">Input Account</label>
+                        <select class="form-select js-select2" id="input_account_id" name="input_account_id">
+                            <option value="">Select Input Account</option>
+                            {% for item in input_settings %}
+                                <option value="{{ item.id }}">{{ item.tool_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group mt-3">
+                        <label for="start_date" id="label_start">Start Date</label>
+                        <input type="date" class="form-control" name="start_date" id="start_date">
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <input type="text" class="form-control" name="description" id="description" placeholder="Enter Description">
+                    </div>
+
+                    <div class="form-group mt-3">
+                        <label for="output_account_id">Output Account</label>
+                        <select class="form-select js-select2" id="output_account_id" name="output_account_id">
+                            <option value="">Select Output Account</option>
+                            {% for item in output_settings %}
+                                <option value="{{ item.id }}">{{ item.tool_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group mt-3">
+                        <label for="end_date" id="label_end">End Date</label>
+                        <input type="date" class="form-control" name="end_date" id="end_date">
+                    </div>
+                </div>
+            </div>
+
+            <hr class="mt-5"/>
+
+            <div id="function_section">
+                <h5 class="mb-3">Functions</h5>
+
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="selectAllCheckboxes">
+                    <label class="form-check-label" for="selectAllCheckboxes">
+                        Select All
+                    </label>
+                </div>
+
+                <table class="table table-hover table-bordered mt-2" id="function_table">
+                    <thead>
+                        <tr>
+                            <th>Function Name</th>
+                            <th>Transfer</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for func in ["Reckon_coa", "Reckon_item", "Reckon_Invoice", "Reckon_bill", "Reckon_Invoice_creditnote", "Reckon_bill_vendorcredit", "Reckon_invoice_payment", "Reckon_bill_payment","Reckon_Taxcode" ,"Reckon_supplier","Reckon_customer"] %}
+
+                        <tr>
+                            <td>{{ func }}</td>
+                            <td><input type="checkbox" name="mycheckbox" value="{{ func }}"></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-4 text-end">
+                <button type="submit" class="btn btn-success" id="submit_button">Submit</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock content %}
+
+{% block javascripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.4/js/select2.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('.js-select2').select2({
+            placeholder: 'Select an option',
+            allowClear: true,
+            width: '100%'
+        });
+
+        $('#input_account_id').on('change', function () {
+            var input_type = $(this).val();
+            $.ajax({
+                type: 'POST',
+                url: '/getInputAccountType',
+                data: { input_type: input_type },
+                success: function (data) {
+                    var result = $.parseJSON(data);
+                    if (result.account_type === 'Excel') {
+                        $('#start_date, #end_date, #label_start, #label_end, #function_table, #function_section').hide();
+                    } else {
+                        $('#start_date, #end_date, #label_start, #label_end, #function_table, #function_section').show();
+                    }
+                }
+            });
+        });
+
+        $('#selectAllCheckboxes').click(function () {
+            $('input[name="mycheckbox"]').prop('checked', this.checked);
+        });
+    });
+</script>
+{% endblock javascripts %}

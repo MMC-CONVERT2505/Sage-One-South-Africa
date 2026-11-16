@@ -1,0 +1,172 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} UI Datatables {% endblock %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+
+<div class="row">
+    <div class="col-md-12">
+        <div id="ajax-alert" class=""></div>
+        <div class="card mt-5">
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-danger" role="alert">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+            
+        {% endwith %}
+
+
+            <div class="card-header">
+                <span>Tasks</span>
+            {% for job, task in data %}
+                {% if task.write == 3 %}
+                    <button id="generateReport" class="btn btn-success" onclick="generateReport('{{ job.id }}')" disabled>Generate Report</button>
+                {% elif task.write == 1 %}
+                    <button id="generateReport" class="btn btn-success" onclick="generateReport('{{ job.id }}')">Generate Report</button>
+                {% endif %}
+            {% endfor %}
+
+
+                
+                {% if msg %}
+                <span class="text-success">{{ request.args.get('msg') }}</span>
+                {% endif %}
+            </div>
+
+            <div class="table-responsive">
+                <table id="basic-datatables" class="display table table-striped table-hover">
+                    <thead>
+                    <tr>
+                        <th>Task ID</th>
+                        <th>Function Name</th>
+                        <th>Read Task Status</th>
+                        <th>Write Task Status</th>
+                        <th>Execution Details</th>
+                        <th>Records</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for job,task in data %}
+                    <tr>
+                        <td>{{task.id}}</td>
+                        <td>{{task.function_name}}</td>
+                        {% if task.read == 3 %}
+                        <td>Not started</td>
+                        {% elif task.read == 2 %}
+                        <td>In Progress</td>
+                        {% elif task.read == 1 %}
+                        <td>Successful</td>
+                        {% else %}
+                        <td>Failed</td>
+                        {% endif %}
+
+                        {% if task.write == 3 %}
+                        <td>Not started</td>
+                        {% elif task.write == 2 %}
+                        <td>In Progress</td>
+                        {% elif task.write == 1 %}
+                        <td>Successful</td>
+
+                        {% else %}
+                        <td>Failed</td>
+                        {% endif %}
+                        <td><a href="/task_execution_details/{{task.id}}">View Details</a></td>
+                       
+                        {% if job.start_date %}
+                            <td><a href="/records/{{task.id}}/{{task.function_name}}/{{job.start_date}}/{{job.end_date}}">View Details</a></td>
+                        {% else %}
+                            <td><a href="/records/{{task.id}}/{{task.function_name}}/None/None">View Details</a></td>
+                        {% endif %}
+                        
+                    </tr>
+                    {% endfor %}
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <button id='start_job' value="{{job_id}}" class="btn btn-primary pull-right">Get Report data</button>
+
+</div>
+</div>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.4/jquery.min.js" integrity="sha512-pumBsjNRGGqkPzKHndZMaAG+bir374sORyzM3uulLV14lN5LyykqNk8eEeUlUkB3U0M4FApyaHraT65ihJhDpQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<script>
+		$(document).ready(function() {
+		
+        $('#start_job').click(function() {
+
+
+            alert('Job has been started successfully!!');
+            var job_id =  $("#start_job").val();
+            $.ajax({
+            type: 'POST',
+            url: "/startJobByIDUser",
+            data: {job_id: job_id},
+                success: function(data){
+                            var result = $.parseJSON(data);
+                            if(result.status=='success'){
+                                    $("#ajax-alert").addClass("alert alert-success").text('Job has been started successfully!!');
+                                    $("#ajax-alert").alert();
+                                    $("#ajax-alert").fadeTo(5000, 5000).slideUp(5000, function(){
+                                    });
+                            }else{
+                                $("#ajax-alert").addClass("alert alert-danger").text('Something went wrong!!');
+                                $("#ajax-alert").alert();
+                                $("#ajax-alert").fadeTo(5000, 5000).slideUp(5000, function(){
+                                });
+                            }
+                        },
+                // error:function(xhr,status,error){
+                //     alert("job failed due to invalid access token")
+
+                // }
+                });
+		});
+
+
+    });
+
+    function generateReport(jobId) {
+        redirecttonextpage(jobId)
+        $.ajax({
+            url: '/report_generation/' + jobId,
+            type: 'POST',
+            success: function (response) {
+                console.log('jobId');
+                alert('Report generated successfully.');;
+                
+            },
+            error: function (error) {
+                console.log('jobId');
+                alert('Error generating the report.');
+            }
+        });
+            
+    }
+
+    function redirecttonextpage(jobId){
+                window.location.href = "/filejobs/report/" + jobId;
+    }
+
+
+
+
+</script>
+
+{% endblock javascripts %}

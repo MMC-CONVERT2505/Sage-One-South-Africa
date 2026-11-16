@@ -1,0 +1,113 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} UI Forms {% endblock %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.4/css/select2.min.css" rel="stylesheet"/>
+{% endblock stylesheets %}
+
+
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h4 class="page-title">Jobs</h4>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="#">Home</a></li>
+            <li class="breadcrumb-item"><a href="/jobs">Jobs</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Add New Job</li>
+        </ol>
+    </nav>
+</div>
+
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-danger" role="alert">
+        {{ message }}
+    </div>
+    {% endfor %}
+{% endif %}
+{% endwith %}
+
+<div class="card">
+    <div class="card-header" style="background-color: #6495ED;">
+        <div class="card-title" style="color: white;">Create Job</div>
+        {% if request.args.get('msg') %}
+        <span class="text-danger">{{ request.args.get('msg') }}</span>
+        {% endif %}
+    </div>
+    <div class="card-body">
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group mt-6">
+                        {{payment_data}}
+                    </div>
+                    
+            
+            
+          
+
+    </div>
+</div>
+
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.4/jquery.min.js" integrity="sha512-pumBsjNRGGqkPzKHndZMaAG+bir374sORyzM3uulLV14lN5LyykqNk8eEeUlUkB3U0M4FApyaHraT65ihJhDpQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.4/js/select2.min.js"></script>
+<script>
+	$(".js-select2").select2({
+		closeOnSelect: false,
+		placeholder: "Select functions",
+		allowHtml: true,
+		allowClear: true,
+		tags: true
+	});
+
+    $("#input_account_id").change(function () {
+        var input_type =  $("#input_account_id option:selected").val();
+        $.ajax({
+            type: 'POST',
+            url: "/getInputAccountType",
+            data: {input_type: input_type},
+            success: function(data){
+                var result = $.parseJSON(data);
+                        if(result.account_type=='Excel'){
+                            $('#start_date').hide();
+                            $('#end_date').hide();
+                            $('#label_start').hide();
+                            $('#label_end').hide();
+                            $('#function_table').hide();
+                            $('#function_table').prop('disabled', 'disabled');
+
+                            $('#lable_function').hide();
+                            //$('#submit_button').hide();
+                            $('#upload_button').show();
+                            $('#lable_upload1').show();
+
+                            
+                        }else{
+                            $('#start_date').show();
+                            $('#end_date').show();
+                            $('#label_start').show();
+                            $('#label_end').show();
+                            $('#function_table').show();
+                            $('#lable_function').show();
+                            //$('#submit_button').show();
+                            $('#upload_button').hide();
+                            $('#lable_upload1').hide();
+                        }
+                        
+                    
+                    }
+            });
+        });
+</script>
+{% endblock javascripts %}

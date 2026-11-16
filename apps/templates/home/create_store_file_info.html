@@ -1,0 +1,52 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} UI Forms {% endblock %} 
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+	<div class="content">
+		<div class="page-inner">
+			<div class="page-header">
+				
+			</div>
+			<div class="row">
+				<div class="col-md-12">
+					<div class="card">
+						<form action="" method="post">
+						<div class="card-body">
+							<div class="row">
+								
+								<div class="col-md-6 col-lg-4">
+									<div class="form-group mt-1">
+										<label for="name">Name</label>
+										<input type="text" class="form-control" id="name" name="name" placeholder="Enter Name">
+									</div>
+									
+								</div>
+
+
+							</div>
+						</div>
+						<div class="card-action">
+							<button class="btn btn-success ms-3 mb-3" type="submit">Submit</button>
+							<!-- <button class="btn btn-danger">Cancel</button> -->
+						</div>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+
+	<!-- Atlantis DEMO methods, don't include it in your project! -->
+	<script src="/static/assets/js/setting-demo2.js"></script>
+
+{% endblock javascripts %}	

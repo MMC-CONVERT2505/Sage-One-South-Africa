@@ -1,0 +1,112 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} UI Forms {% endblock %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+<div class="content">
+	<div class="page-inner">
+		<div class="page-header">
+			<ul class="breadcrumbs">
+				<li class="separator">
+					<i class="flaticon-right-arrow"></i>
+				</li>
+				<li class="nav-item">
+					<a href="#">Create Setting</a>
+				</li>
+			</ul>
+		</div>
+		<div class="row">
+			<div class="col-md-12">
+				<div class="card">
+					<form action="" method="post">
+						<div class="card-body">
+							<div class="row">
+
+								<div class="col-md-6 col-lg-4">
+									<div class="form-group mt-1">
+										<label for="name">Name</label>
+										<input type="text" class="form-control" id="name" name="name"
+											placeholder="Enter Name">
+									</div>
+									<div class="form-group mt-2">
+										<label for="description">Account Type</label>
+										<input type="text" class="form-control" id="account_type" name="account_type"
+											Value="Xero">
+									</div>
+									<div class="form-group mt-1">
+										<label for="description">Select Tool Type</label>
+										<select class="form-control js-select2 input-solid" name="tool_type"
+											single="single">
+
+											<label for="description">Select Tool Type</label>
+											<option value="Input" data-badge="">Input</option>
+											<option value="Output" data-badge="">Output</option>
+										</select>
+									</div>
+
+									<div class="form-group mt-1">
+										<label for="client_id">Client ID</label>
+										<input type="text" class="form-control" id="client_id" name="client_id"
+											value="BDDDE967BCF943098B8A44E164AE1A74">
+									</div>
+									<div class="form-group mt-1">
+										<label for="client_secret">Client Secret</label>
+										<input type="text" class="form-control" id="client_secret" name="client_secret"
+											value="JVCy3rDSvqkMelGOxJenpLkdiAgRgiHcXLe6GJZ79IAKXv_l">
+									</div>
+									<div class="form-group mt-1">
+										<label for="refresh_token">Refresh Token</label>
+										<input type="text" class="form-control" id="refresh_token" name="refresh_token"
+											value={{ xero_refresh_token }}>
+									</div>
+									<div class="form-group mt-1">
+										<label for="access_token">access token</label>
+										<input type="text" class="form-control" id="access_token" name="access_token"
+											value={{ xero_access_token }}>
+									</div>
+									<div class="form-group mt-1">
+										<label for="xero_tenant_id">Xero Tenant ID</label>
+										<input type="text" class="form-control" id="xero_tenant_id"
+											name="xero_tenant_id" value={{ xero_client_id }}>
+									</div>
+									<div class="form-group mt-1">
+										<label for="state">State</label>
+										<input type="text" class="form-control" id="state" name="state" value="123456">
+									</div>
+									<div class="form-group mt-1">
+										<label for="Scopes">Scopes</label>
+										<input type="text" class="form-control" id="Scopes" name="Scopes"
+											value="openid profile email accounting.transactions accounting.contacts accounting.settings payroll.employees payroll.employees.read accounting.transactions.read offline_access">
+									</div>
+									<div class="form-group mt-1">
+										<label for="re_directURI">Re_directURI</label>
+										<input type="text" class="form-control" id="re_directURI" name="re_directURI"
+											value="https://www.mmcconvert.com">
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="card-action">
+							<button class="btn btn-success ms-3 mb-3" type="submit">Submit</button>
+							<!-- <button class="btn btn-danger">Cancel</button> -->
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+
+<!-- Atlantis DEMO methods, don't include it in your project! -->
+<script src="/static/assets/js/setting-demo2.js"></script>
+
+{% endblock javascripts %}

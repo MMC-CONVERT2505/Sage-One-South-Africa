@@ -1,0 +1,205 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} UI Datatables {% endblock %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+<div class="row">
+    <div class="col-md-12">
+        <div id="ajax-alert" class=""></div>
+        <div class="card mt-5">
+            <div class="card-header">
+                <span>Tasks</span>
+                <button id='start_job' value="{{job_id}}" class="btn btn-primary pull-right">Start</button>
+
+                 
+                {% if msg %}
+                <span class="text-success">{{ request.args.get('msg') }}</span>
+                {% endif %}
+
+                <button id='retry_start_job' value="{{job_id}}" class="btn btn-primary pull-right">All Retry</button>
+        
+            </div>
+
+            <div id="alloc-progress" style="display:none; padding:16px 20px; border-bottom:1px solid #eee;">
+                <h5 style="margin-bottom:12px;">Allocation progress <small class="text-muted" id="alloc-updated"></small></h5>
+                <div id="alloc-sources"></div>
+                <div id="alloc-files" style="margin-top:10px;"></div>
+            </div>
+
+            <div class="table-responsive">
+                <table id="basic-datatables" class="display table table-striped table-hover">
+                    <thead>
+                    <tr>
+                        <th>Task ID</th>
+                        <th>Function Name</th>
+                        <th>Read Task Status</th>
+                        <th>Write Task Status</th>
+                        <th>Execution Details</th>
+                        <th>Records</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for job,task in data %}
+                    <tr>
+                        <td>{{task.id}}</td>
+                        <td>{{task.function_name}}</td>
+                        {% if task.read == 3 %}
+                        <td>Not started</td>
+                        {% elif task.read == 2 %}
+                        <td>In Progress</td>
+                        {% elif task.read == 1 %}
+                        <td>Successful</td>
+                        {% else %}
+                        <td>Failed</td>
+                        {% endif %}
+
+                        {% if task.write == 3 %}
+                        <td>Not started</td>
+                        {% elif task.write == 2 %}
+                        <td>In Progress</td>
+                        {% elif task.write == 1 %}
+                        <td>Successful</td>
+                        {% else %}
+                        <td>Failed</td>
+                        {% endif %}
+                        <td><a href="/task_execution_details/{{task.id}}">View Details</a></td>
+                       
+                        {% if job.start_date %}
+                            <td><a href="/records/{{task.id}}/{{task.function_name}}/{{job.start_date}}/{{job.end_date}}">View Details</a></td>
+                        {% else %}
+                            <td><a href="/records/{{task.id}}/{{task.function_name}}/None/None">View Details</a></td>
+                        {% endif %}
+                        
+                    </tr>
+                    {% endfor %}
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+</div>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.4/jquery.min.js" integrity="sha512-pumBsjNRGGqkPzKHndZMaAG+bir374sORyzM3uulLV14lN5LyykqNk8eEeUlUkB3U0M4FApyaHraT65ihJhDpQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<script>
+		$(document).ready(function() {
+		
+        $('#start_job').click(function() {
+
+
+            alert('Job has been started successfully!!');
+            var job_id =  $("#start_job").val();
+            $.ajax({
+            type: 'POST',
+            url: "/startJobByIDUser",
+            data: {job_id: job_id},
+                success: function(data){
+                            var result = $.parseJSON(data);
+                            if(result.status=='success'){
+                                    $("#ajax-alert").addClass("alert alert-success").text('Job has been started successfully!!');
+                                    $("#ajax-alert").alert();
+                                    $("#ajax-alert").fadeTo(5000, 5000).slideUp(5000, function(){
+                                    });
+                            }else{
+                                $("#ajax-alert").addClass("alert alert-danger").text('Something went wrong!!');
+                                $("#ajax-alert").alert();
+                                $("#ajax-alert").fadeTo(5000, 5000).slideUp(5000, function(){
+                                });
+                            }
+                        },
+                // error:function(xhr,status,error){
+                //     alert("job failed due to invalid access token")
+
+                // }
+                });
+		});
+
+
+    });
+
+    $(document).ready(function() {
+		
+        $('#retry_start_job').click(function() {
+            
+            alert('Retry job has been started successfully!!');
+
+
+            var job_id =  $("#retry_start_job").val();
+            $.ajax({
+            type: 'POST',
+            url: "/retrystartJobByID",
+            data: {job_id: job_id},
+                success: function(data){
+                            var result = $.parseJSON(data);
+                            if(result.status=='success'){
+                                    $("#ajax-alert").addClass("alert alert-success").text('Job has been started successfully!!');
+                                    $("#ajax-alert").alert();
+                                    $("#ajax-alert").fadeTo(5000, 5000).slideUp(5000, function(){
+                                    });
+                                    alert('Job has been started successfully!!');
+                            }else{
+                                $("#ajax-alert").addClass("alert alert-danger").text('Something went wrong!!');
+                                $("#ajax-alert").alert();
+                                $("#ajax-alert").fadeTo(5000, 5000).slideUp(5000, function(){
+                                });
+                            }
+                        },
+                error:function(xhr,status,error){
+                    alert("job failed due to invalid access token")
+
+                }
+                });
+		});
+
+
+    });
+
+    // Allocation tasks ka progress (kitna aaya / kitna baaki), har 10 second me update
+    function loadAllocationProgress() {
+        $.getJSON("/allocation_progress/{{job_id}}", function(data) {
+            if (!data.sources.length) { return; }
+            var html = "";
+            data.sources.forEach(function(s) {
+                var pct = s.total ? Math.min(100, Math.floor(s.have * 100 / s.total)) : 0;
+                var color = s.done ? "#28a745" : (s.running ? "#007bff" : "#adb5bd");
+                var status;
+                if (s.done) { status = "Complete"; }
+                else if (s.running) { status = (s.total - s.have).toLocaleString() + " baaki" + (s.eta_min ? " · ETA ~" + s.eta_min + " min" : ""); }
+                else if (s.have) { status = "Ruka hua (Retry se aage chalega)"; }
+                else { status = "Intezaar"; }
+                html += '<div style="display:flex; align-items:center; gap:12px; margin-bottom:8px; flex-wrap:wrap;">'
+                     +  '<div style="width:140px; font-weight:600;">' + s.label + '</div>'
+                     +  '<div style="flex:1; min-width:160px; background:#e9ecef; border-radius:4px; height:18px; overflow:hidden;">'
+                     +    '<div style="width:' + pct + '%; background:' + color + '; height:100%;"></div></div>'
+                     +  '<div style="width:150px; text-align:right;">' + s.have.toLocaleString() + ' / ' + (s.total ? s.total.toLocaleString() : '?') + ' (' + pct + '%)</div>'
+                     +  '<div style="width:260px;" class="text-muted">' + status + '</div>'
+                     +  '</div>';
+            });
+            $("#alloc-sources").html(html);
+            var files = data.files.map(function(f) {
+                return f.name + ": " + (f.rows ? "<b>" + f.rows.toLocaleString() + " rows</b> ✅" : "banna baaki");
+            });
+            $("#alloc-files").html("<b>Files:</b> " + files.join(" &nbsp;|&nbsp; "));
+            $("#alloc-updated").text("(updated " + new Date().toLocaleTimeString() + ")");
+            $("#alloc-progress").show();
+        });
+    }
+    $(document).ready(function() {
+        loadAllocationProgress();
+        setInterval(loadAllocationProgress, 10000);
+    });
+
+</script>
+
+{% endblock javascripts %}

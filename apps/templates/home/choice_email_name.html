@@ -1,0 +1,65 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} UI Forms {% endblock %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+		<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+			<h4 class="page-title">ID'S</h4>
+			<nav aria-label="breadcrumb">
+				<ol class="breadcrumb">
+					<li class="breadcrumb-item"><a href="#">Home</a></li>
+					<li class="breadcrumb-item active" aria-current="page">Add New ID</li>
+				</ol>
+			</nav>
+		</div>
+<div class="row">
+	<div class="col-md-12" style="height: 100vh;">
+		<div class="card">
+			<div class="card-header" style="background-color:  #6495ED;">
+				<div class="card-title" style="color: white;">Xero `Id</div>
+			</div>
+			<form action="" method="post">
+				<div class="card-body">
+					<div class="row">
+						<div class="col-md-6 col-lg-4">
+							<div class="form-group form-floating-label mt-3">
+								<label for="output_account_id">Email Id</label>
+								<select class="form-control form-select input-solid" id="email_select_id"
+										name="email_select_id">
+									<option value='None'>Select Email ID</option>
+									{% for item in email_settings %}
+									<option value={{item.id}}>{{item.Email}}</option>
+									{% endfor %}
+								</select>
+		
+							</div>
+		
+						</div>
+					</div>
+				</div>
+				<div class="card-action">
+					<button class="btn btn-success ms-3 mb-3" type="submit">Submit</button>
+					<!-- <button class="btn btn-danger">Cancel</button> -->
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE -->
+{% block javascripts %}
+
+
+<!-- Atlantis DEMO methods, don't include it in your project! -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.4/jquery.min.js" integrity="sha512-pumBsjNRGGqkPzKHndZMaAG+bir374sORyzM3uulLV14lN5LyykqNk8eEeUlUkB3U0M4FApyaHraT65ihJhDpQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.4/js/select2.min.js"></script>
+<script src="/static/assets/js/Tool-demo2.js"></script>
+<script>
+ 
+</script>
+{% endblock javascripts %}

@@ -1,0 +1,99 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} UI Datatables {% endblock %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+<div class="row">
+    <div class="col-md-12">
+        <div id="ajax-alert" class=""></div>
+        <div class="card mt-5">
+            <div class="card-header">
+                <span>Report</span>
+                {% if msg %}
+                <span class="text-success">{{ request.args.get('msg') }}</span>
+                {% endif %}
+            </div>
+
+            <div class="table-responsive">
+                <table id="basic-datatables" class="display table table-striped table-hover">
+                    <thead>
+                    <tr>
+                        
+                        <th>Report 1st Years</th>
+                        <th>Report 2nd Years</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td> <a href="#" class="btn btn-info" onclick="previewpreviousReport('{{ job_id }}')">Preview 1st Year Report</a>
+                        </td>
+                        <td> <a href="#" class="btn btn-info" onclick="previewReport('{{ job_id }}')">Preview 2nd Year Report</a>
+                        </td>
+                        
+                    </tr>
+                    
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+</div>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.4/jquery.min.js" integrity="sha512-pumBsjNRGGqkPzKHndZMaAG+bir374sORyzM3uulLV14lN5LyykqNk8eEeUlUkB3U0M4FApyaHraT65ihJhDpQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<script>
+
+function previewReport(jobId) {
+        var reportPath = "https://sagetoreckon.mmcconvert.com/static/reports/Report_current_year_" + jobId + ".pdf";
+        new_url = reportPath.replace("filejobs/report/create/", "")
+
+        console.log(new_url)
+        var xhr = new XMLHttpRequest();
+        xhr.open('HEAD', new_url, true);
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState == 4) {
+                if (xhr.status == 200) {
+                    window.location.href = new_url;
+                } else {
+                    alert('Please generate the report as it is currently unavailable.');
+                }
+            }
+        };
+        xhr.send();
+    }
+
+
+    function previewpreviousReport(jobId) {
+        var reportPath = "https://sagetoreckon.mmcconvert.com/static/reports/Report_previous_year_" + jobId + ".pdf";
+
+        new_url = reportPath.replace("filejobs/report/create/", "")
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('HEAD', new_url, true);
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState == 4) {
+                if (xhr.status == 200) {
+                    window.location.href = new_url;
+                } else {
+                    alert('Please generate the report as it is currently unavailable.');
+                }
+            }
+        };
+        xhr.send();
+    }
+		
+		
+
+</script>
+
+{% endblock javascripts %}

@@ -1,0 +1,134 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Job Dashboard {% endblock %}
+
+{% block stylesheets %}
+<style>
+    .card-header .btn {
+        margin-left: 10px;
+    }
+
+    .page-title {
+        margin-top: 30px;
+        font-weight: 600;
+        font-size: 26px;
+        color: #343a40;
+    }
+
+    .file-label {
+        font-size: 20px;
+        color: #007bff;
+        margin-bottom: 20px;
+    }
+
+    .pagination .btn {
+        margin: 0 2px;
+    }
+
+    .text-success {
+        font-weight: 500;
+    }
+</style>
+{% endblock stylesheets %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="text-center">
+        <h3 class="file-label">📄 File Name: <strong>{{ tool_file_name.file_name }}</strong></h3>
+    </div>
+
+    <div class="card shadow-sm mt-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Available Jobs</h5>
+            <div>
+                <a href="/filejobs/jobs/create/{{ id }}" class="btn btn-outline-primary btn-sm">
+                    <i class="fas fa-plus-circle"></i> Create Job
+                </a>
+                <a href="/filejobs/report/create/{{ id }}" class="btn btn-outline-info btn-sm">
+                    <i class="fas fa-file-alt"></i> Report
+                </a>
+                <a href="/filejobs/sagejobs/create/{{ id }}" class="btn btn-outline-secondary btn-sm">
+                    <i class="fas fa-file-excel"></i> Sage-Excel Job
+                </a>
+                <a href="/filejobs/reckonjobs/create/{{ id }}" class="btn btn-outline-warning btn-sm">
+                    <i class="fas fa-file-invoice-dollar"></i> Reckon-Excel Job
+                </a>
+            </div>
+        </div>
+
+        {% if msg %}
+        <div class="alert alert-success text-center mt-2 mb-0" role="alert">
+            {{ request.args.get('msg') }}
+        </div>
+        {% endif %}
+
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="basic-datatables" class="table table-hover table-striped">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th>Input Tool</th>
+                            <th>Output Tool</th>
+                            <th>View Tasks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in jobs.items|reverse %}
+                        <tr>
+                            <td>{{ item[0].name }}</td>
+                            <td>{{ item[0].description }}</td>
+                            <td>{{ item[1] }}</td>
+                            <td>{{ item[2] }}</td>
+                            <td>
+                                <a href="/filejobs/tasks/{{ item[0].id }}" class="btn btn-sm btn-outline-dark">View Tasks</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="d-flex justify-content-end mt-3">
+                <nav aria-label="Page navigation">
+                    <div class="btn-group">
+                        <a href="{{ url_for('home_blueprint.jobs', page=jobs.prev_num) }}"
+                           class="btn btn-outline-dark {% if jobs.page == 1 %}disabled{% endif %}">
+                            &laquo;
+                        </a>
+                        {% for page_num in jobs.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                            {% if page_num %}
+                                <a href="{{ url_for('home_blueprint.jobs', page=page_num) }}"
+                                   class="btn {% if jobs.page == page_num %}btn-dark{% else %}btn-outline-dark{% endif %}">
+                                    {{ page_num }}
+                                </a>
+                            {% else %}
+                                <span class="btn btn-outline-secondary disabled">…</span>
+                            {% endif %}
+                        {% endfor %}
+                        <a href="{{ url_for('home_blueprint.jobs', page=jobs.next_num) }}"
+                           class="btn btn-outline-dark {% if jobs.page == jobs.pages %}disabled{% endif %}">
+                            &raquo;
+                        </a>
+                    </div>
+                </nav>
+            </div>
+            <p class="text-right text-muted mt-2">Showing page {{ jobs.page }} of {{ jobs.pages }}</p>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block javascripts %}
+<script>
+    $(document).ready(function () {
+        $('#basic-datatables').DataTable({
+            "order": [[0, "desc"]],
+            "pageLength": 10,
+            "lengthChange": false,
+        });
+    });
+</script>
+{% endblock javascripts %}

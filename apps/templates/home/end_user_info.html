@@ -1,0 +1,198 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} UI Datatables {% endblock %}
+
+
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card mt-5">
+            <div class="card-header">
+                <h2>
+                    <center>USER-DATA</center>
+                </h2>
+            </div>
+            <ul class="nav nav-tabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                  <a class="nav-link active" id="simple-tab-0" data-bs-toggle="tab" href="#simple-tabpanel-0" role="tab" aria-controls="simple-tabpanel-0" aria-selected="true">In progress user data</a>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <a class="nav-link" id="simple-tab-1" data-bs-toggle="tab" href="#simple-tabpanel-1" role="tab" aria-controls="simple-tabpanel-1" aria-selected="false">Not started user data</a>
+                </li>
+               
+              </ul>
+              <div class="tab-content pt-5" id="tab-content">
+                <div class="tab-pane active" id="simple-tabpanel-0" role="tabpanel" aria-labelledby="simple-tab-0">
+                    <table id="basic-datatables" class="display table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>File Name</th>
+                                <th>Start date</th>
+                                <th>End date</th>
+                                <th>Link</th>
+                                <!-- <th>Create Report</th> -->
+                                <th>Generate Report</th>
+                                <th>Preview Report</th>
+                                <th>Send Email</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in all_customer_authinfo %}
+                            <tr>
+                                <td>{{item.First_Name}}</td>
+                                <td>{{item.Email}}</td>
+                                <td>{{item.Company}}</td>
+                                <td>{{item.start_date}}</td>
+                                <td>{{item.end_date}}</td>
+
+                                <td><a href="start_conversion_report/{{item.job_id}}">Check Status</a></td>
+
+                                <!-- <td>
+                                    <button id="createreport" class="btn btn-success"
+                                        onclick="createreport('{{ item.job_id }}')">Create Report</button>
+                                </td> -->
+
+                                <td>
+                                    <button id="generateReport" class="btn btn-success"
+                                        onclick="generateReport('{{ item.job_id }}')">Generate Report</button>
+                                </td>
+
+                                <td>
+                                    <a href="#" class="btn btn-info" onclick="previewReport('{{ item.job_id }}')">Preview Report</a>
+                                </td>
+
+                                <td>
+                                    <button id="sendemail" class="btn btn-success"
+                                        onclick="sendemail('{{ item.job_id }}')">Send Email</button>
+                                </td>
+
+                            </tr>
+                            {% endfor %}
+
+                        </tbody>
+                    </table>
+                    
+                </div>
+                <div class="tab-pane" id="simple-tabpanel-1" role="tabpanel" aria-labelledby="simple-tab-1">
+
+                    <table id="basic-datatables" class="display table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>File Name</th>
+                                <th>Start date</th>
+                                <th>End date</th>
+                                <th>File start date</th>
+                                <th>Send Email</th>
+                                
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in all_customer_basicinfo %}
+                            <tr>
+                                <td>{{item.First_Name}}</td>
+                                <td>{{item.Email}}</td>
+                                <td>{{item.Company}}</td>
+                                <td>{{item.start_date}}</td>
+                                <td>{{item.end_date}}</td>
+                                <td>{{item.created_at}}</td>
+
+                                <td>
+                                    <button id="sendemail" class="btn btn-success"
+                                        onclick="sendemail('{{ item.job_id }}')">Send Email</button>
+                                </td>
+
+                               
+                            </tr>
+                            {% endfor %}
+
+                        </tbody>
+                    </table>
+
+                </div>
+                <div class="tab-pane" id="simple-tabpanel-2" role="tabpanel" aria-labelledby="simple-tab-2">Tab 3 selected</div>
+              </div>
+            
+        </div>
+    </div>
+</div>
+
+{% endblock content %}
+
+
+{% block javascripts %}
+
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+<script>
+
+    // function generateReport(jobId) {
+    //     $.ajax({
+    //         url: '/report_generation/' + jobId,
+    //         type: 'GET',
+    //         success: function (response) {
+    //             console.log('Report generated successfully:');
+    //             alert('Report generated successfully.');
+    //         },
+    //         error: function (error) {
+    //             alert('Report generated successfully.');
+    //         }
+    //     });
+    // }
+
+    function generateReport(jobId) {
+        $.ajax({
+            url: '/report_generation/' + jobId,
+            type: 'GET',
+            success: function (response) {
+                console.log(':');
+                alert('Report generated successfully.');;
+            },
+            error: function (error) {
+                alert('Error generating the report.');
+            }
+        });
+    }
+
+    function sendemail(jobId) {
+        $.ajax({
+            url: '/final_report_email_to_customer/' + jobId,
+            type: 'GET',
+
+            success: function (response) {
+                console.log('Email Sent Successfully');
+                alert('Email Sent Successfully');
+            },
+            error: function (error) {
+                alert('Please generate the PDF before sending the email.');
+            }
+
+        });
+    }
+
+
+    function previewReport(jobId) {
+        var reportPath = "static/reports/Report_" + jobId + ".pdf";
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('HEAD', reportPath, true);
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState == 4) {
+                if (xhr.status == 200) {
+                    window.location.href = reportPath;
+                } else {
+                    alert('Please generate the report as it is currently unavailable.');
+                }
+            }
+        };
+        xhr.send();
+    }
+</script>
+
+{% endblock javascripts %}
