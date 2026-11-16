@@ -59,6 +59,7 @@ if MONGO_URL.endswith("/MMC"):
 REDIS_HOST = _setting("REDIS_HOST")
 REDIS_PORT = int(_setting("REDIS_PORT"))
 REDIS_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}"
+MONGO_DB_NAME = os.getenv("MONGO_DB_NAME", "MMC")
 MYOB_KEY = "client_id,client_secret,company_file_uri,company_file_id,refresh_token,access_token,redirect_uri"
 QBO_KEY = "client_id,client_secret,base_url,company_id,minor_version,User_Agent,access_token,refresh_token"
 XERO_KEY = "client_id,client_secret,refresh_token,access_token,xero-tenant-id,re_directURI,scopes,state"

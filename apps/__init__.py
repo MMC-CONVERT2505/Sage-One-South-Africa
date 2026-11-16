@@ -75,7 +75,7 @@ def configure_celery(app=None):
     app.config["SQLALCHEMY_DATABASE_URI"] = (
         f"mysql+pymysql://{MDB_USERNAME}:{MDB_PASSWORD}@{MDB_HOST}:{MDB_PORT}/{MDB_NAME}"
     )
-    app.config["MONGO_URI"] = f"{MONGO_URL}/MMC"
+    app.config["MONGO_URI"] = f"{MONGO_URL}/{MONGO_DB_NAME}"
 
     # for conf in config_dict[get_config_mode.capitalize()]:
     #     print(conf)
@@ -84,6 +84,6 @@ def configure_celery(app=None):
 
 
 def mongo_config(app=None):
-    mongodb_client = PyMongo(app, uri=f"{MONGO_URL}/MMC")
+    mongodb_client = PyMongo(app, uri=f"{MONGO_URL}/{MONGO_DB_NAME}")
     db2 = mongodb_client.db
     return db2
